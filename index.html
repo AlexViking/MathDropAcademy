@@ -530,11 +530,13 @@
 				3px 3px 0px #000000,
 				6px 6px 0px rgba(0, 0, 0, 0.3);
 			transition: none;
-			-webkit-tap-highlight-color: rgba(0, 255, 65, 0.3);
+			-webkit-tap-highlight-color: rgba(0, 255, 65, 0.5);
 			touch-action: manipulation;
 			user-select: none;
 			-webkit-user-select: none;
 			min-width: 60px;
+			position: relative;
+			z-index: 1000;
 		}
 
 		.mobile-btn:active {
@@ -2273,6 +2275,9 @@
 		let touchStartY = null;
 
 		document.addEventListener('touchstart', function(e) {
+			// Skip if touching mobile control buttons
+			if (e.target.classList.contains('mobile-btn')) return;
+			
 			// Only prevent default for game screen, allow normal touch for level picker
 			if (currentScreen === 'gameScreen' && !isPaused && falling) {
 				e.preventDefault();
@@ -2283,6 +2288,9 @@
 		}, { passive: false });
 
 		document.addEventListener('touchmove', function(e) {
+			// Skip if touching mobile control buttons
+			if (e.target.classList.contains('mobile-btn')) return;
+			
 			// Only prevent default for game screen
 			if (currentScreen === 'gameScreen' && !isPaused && falling) {
 				e.preventDefault();
@@ -2290,6 +2298,9 @@
 		}, { passive: false });
 
 		document.addEventListener('touchend', function(e) {
+			// Skip if touching mobile control buttons
+			if (e.target.classList.contains('mobile-btn')) return;
+			
 			if (currentScreen !== 'gameScreen' || isPaused || !falling || touchStartX === null) return;
 			
 			e.preventDefault();
@@ -2355,30 +2366,57 @@
 			const rightBtn = document.getElementById('rightBtn');
 			const dropBtn = document.getElementById('dropBtn');
 
+			function moveLeft(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				if (currentScreen === 'gameScreen' && !isPaused && falling && fx > 0) {
+					fx--;
+					draw();
+				}
+			}
+
+			function moveRight(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				if (currentScreen === 'gameScreen' && !isPaused && falling && fx < gridW - 1) {
+					fx++;
+					draw();
+				}
+			}
+
+			function dropPiece(e) {
+				e.preventDefault();
+				e.stopPropagation();
+				if (currentScreen === 'gameScreen' && !isPaused && falling && fy < gridH - 1) {
+					fy++;
+					draw();
+				}
+			}
+
 			if (leftBtn) {
-				leftBtn.addEventListener('click', function() {
-					if (currentScreen === 'gameScreen' && !isPaused && falling && fx > 0) {
-						fx--;
-						draw();
-					}
+				leftBtn.addEventListener('click', moveLeft);
+				leftBtn.addEventListener('touchend', moveLeft);
+				leftBtn.addEventListener('touchstart', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
 				});
 			}
 
 			if (rightBtn) {
-				rightBtn.addEventListener('click', function() {
-					if (currentScreen === 'gameScreen' && !isPaused && falling && fx < gridW - 1) {
-						fx++;
-						draw();
-					}
+				rightBtn.addEventListener('click', moveRight);
+				rightBtn.addEventListener('touchend', moveRight);
+				rightBtn.addEventListener('touchstart', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
 				});
 			}
 
 			if (dropBtn) {
-				dropBtn.addEventListener('click', function() {
-					if (currentScreen === 'gameScreen' && !isPaused && falling && fy < gridH - 1) {
-						fy++;
-						draw();
-					}
+				dropBtn.addEventListener('click', dropPiece);
+				dropBtn.addEventListener('touchend', dropPiece);
+				dropBtn.addEventListener('touchstart', function(e) {
+					e.preventDefault();
+					e.stopPropagation();
 				});
 			}
 		}
