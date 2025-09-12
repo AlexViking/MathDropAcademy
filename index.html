@@ -363,7 +363,11 @@
 			border-radius: 0;
 			box-shadow: inset 2px 2px 0px rgba(0, 255, 65, 0.3);
 			max-width: 100%;
+			width: fit-content;
+			height: fit-content;
 			overflow: visible;
+			justify-self: center;
+			align-self: center;
 		}
 
 		.cell {
@@ -557,6 +561,78 @@
 			
 			.mobile-controls {
 				display: flex;
+			}
+		}
+
+		/* Landscape orientation support */
+		@media screen and (orientation: landscape) and (max-height: 500px) {
+			.level-picker-screen {
+				padding: 5px 0;
+			}
+			
+			.level-picker-content {
+				padding: 5px;
+			}
+			
+			.level-picker-title {
+				font-size: 1.3em !important;
+				margin-bottom: 5px !important;
+			}
+			
+			.level-grid {
+				grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+				gap: 8px !important;
+				max-height: 60vh !important;
+				margin: 5px 0 !important;
+			}
+			
+			.level-card {
+				min-height: 70px !important;
+				padding: 8px !important;
+			}
+			
+			.level-card-number {
+				font-size: 1.3em !important;
+			}
+			
+			.level-card-title {
+				font-size: 0.8em !important;
+			}
+			
+			.level-card-desc {
+				font-size: 0.7em !important;
+			}
+			
+			/* Game screen landscape adjustments */
+			.main-container {
+				height: 100vh !important;
+				height: calc(100dvh - 60px) !important;
+				gap: 5px !important;
+				padding: 5px !important;
+			}
+			
+			.title {
+				padding: 8px !important;
+				min-height: 30px !important;
+			}
+			
+			.title h1 {
+				font-size: 1.2em !important;
+			}
+			
+			.game-stats {
+				padding: 8px !important;
+				gap: 8px !important;
+			}
+			
+			.mobile-controls {
+				padding: 5px !important;
+				gap: 10px !important;
+			}
+			
+			.mobile-btn {
+				padding: 10px 15px !important;
+				font-size: 1em !important;
 			}
 		}
 
@@ -957,9 +1033,12 @@
 				grid-template-rows: repeat(10, min(23px, 6vw));
 				border-width: 3px;
 				max-width: 100%;
-				width: 100%;
+				width: fit-content;
+				height: fit-content;
 				overflow: visible;
 				gap: 1px;
+				justify-self: center;
+				align-self: center;
 			}
 
 			.cell {
