@@ -1986,14 +1986,16 @@
 		}
 
 		function updateStats() {
-			// Only update if elements exist (game screen)
-			if (scoreEl) {
-				scoreEl.textContent = gameState.score;
-				correctEl.textContent = gameState.correct;
-				wrongEl.textContent = gameState.wrong;
-				levelEl.textContent = gameState.level;
-				document.getElementById('highScore').textContent = gameState.highestScore;
-			}
+			// Update score, level, correct/wrong counts
+			const score = document.getElementById("score");
+			const correct = document.getElementById("correct");
+			const wrong = document.getElementById("wrong");
+			const level = document.getElementById("level");
+			
+			if (score) score.textContent = gameState.score;
+			if (correct) correct.textContent = gameState.correct;
+			if (wrong) wrong.textContent = gameState.wrong;
+			if (level) level.textContent = gameState.level;
 
 			// Update high score
 			if (gameState.score > gameState.highestScore) {
@@ -2010,6 +2012,139 @@
 			// Save progress
 			saveGameState();
 		}
+
+		// Self-analysis and test function
+		function runSelfAnalysis() {
+			console.log("🧮 MathDrop Academy - Self Analysis Starting...");
+			
+			const tests = {
+				domElements: [],
+				functions: [],
+				gameLogic: [],
+				mobile: []
+			};
+
+			// Test 1: Check critical DOM elements
+			const criticalElements = [
+				'loadingScreen', 'levelPickerScreen', 'gameScreen',
+				'score', 'level', 'correct', 'wrong', 'levelDescription',
+				'game', 'status', 'leftBtn', 'rightBtn', 'dropBtn'
+			];
+			
+			criticalElements.forEach(id => {
+				const element = document.getElementById(id);
+				tests.domElements.push({
+					element: id,
+					exists: !!element,
+					status: element ? '✅' : '❌'
+				});
+			});
+
+			// Test 2: Check critical functions exist
+			const criticalFunctions = [
+				'updateStats', 'showLevelPicker', 'startLevel', 'pauseGame',
+				'enterFullscreen', 'exitFullscreen', 'spawn', 'draw', 'tick'
+			];
+			
+			criticalFunctions.forEach(funcName => {
+				const exists = typeof window[funcName] === 'function';
+				tests.functions.push({
+					function: funcName,
+					exists: exists,
+					status: exists ? '✅' : '❌'
+				});
+			});
+
+			// Test 3: Check game logic
+			tests.gameLogic.push({
+				test: 'Grid dimensions',
+				result: gridW === 10 && gridH === 10,
+				status: (gridW === 10 && gridH === 10) ? '✅' : '❌'
+			});
+			
+			tests.gameLogic.push({
+				test: 'Levels defined',
+				result: Object.keys(LEVELS).length === 17,
+				status: (Object.keys(LEVELS).length === 17) ? '✅' : '❌'
+			});
+
+			tests.gameLogic.push({
+				test: 'Game state initialized',
+				result: gameState && typeof gameState.score === 'number',
+				status: (gameState && typeof gameState.score === 'number') ? '✅' : '❌'
+			});
+
+			// Test 4: Mobile support
+			tests.mobile.push({
+				test: 'Touch events supported',
+				result: 'ontouchstart' in window,
+				status: ('ontouchstart' in window) ? '✅' : '❌'
+			});
+
+			tests.mobile.push({
+				test: 'Mobile controls exist',
+				result: !!(document.getElementById('leftBtn') && document.getElementById('rightBtn')),
+				status: !!(document.getElementById('leftBtn') && document.getElementById('rightBtn')) ? '✅' : '❌'
+			});
+
+			// Report results
+			console.log("📊 Self-Analysis Results:");
+			console.log("DOM Elements:", tests.domElements);
+			console.log("Functions:", tests.functions);
+			console.log("Game Logic:", tests.gameLogic);
+			console.log("Mobile Support:", tests.mobile);
+
+			// Count passed/failed tests
+			const allTests = [...tests.domElements, ...tests.functions, ...tests.gameLogic, ...tests.mobile];
+			const passed = allTests.filter(test => test.status === '✅').length;
+			const total = allTests.length;
+			
+			console.log(`🎯 Overall Score: ${passed}/${total} tests passed (${Math.round(passed/total*100)}%)`);
+			
+			if (passed === total) {
+				console.log("🎉 All systems operational! Game ready for deployment.");
+			} else {
+				console.warn("⚠️ Some issues detected. Please review failed tests.");
+			}
+
+			return { passed, total, tests };
+		}
+
+		// Manual test functions - callable from console
+		function testGame() {
+			console.log("🧪 Running manual game tests...");
+			
+			// Test game functions
+			try {
+				console.log("Testing game board creation...");
+				draw();
+				console.log("✅ Game board renders successfully");
+			} catch (e) {
+				console.error("❌ Game board rendering failed:", e);
+			}
+
+			try {
+				console.log("Testing stats update...");
+				updateStats();
+				console.log("✅ Stats update successfully");
+			} catch (e) {
+				console.error("❌ Stats update failed:", e);
+			}
+
+			try {
+				console.log("Testing level generation...");
+				const testQuestion = generateLevel0Question();
+				console.log("✅ Question generation works:", testQuestion);
+			} catch (e) {
+				console.error("❌ Question generation failed:", e);
+			}
+
+			return runSelfAnalysis();
+		}
+
+		// Expose test functions globally for console access
+		window.testGame = testGame;
+		window.runSelfAnalysis = runSelfAnalysis;
 
 		// Removed old level selector functions - now using level picker screen
 
@@ -2591,6 +2726,14 @@
 			if (fullscreenToggle) {
 				fullscreenToggle.addEventListener('click', toggleFullscreen);
 			}
+
+			// Run self-analysis after DOM is ready
+			setTimeout(() => {
+				const analysis = runSelfAnalysis();
+				if (analysis.passed < analysis.total) {
+					console.warn("🔧 Game has issues but will attempt to run anyway");
+				}
+			}, 100);
 
 			// Start with loading screen
 			showLoadingScreen();
