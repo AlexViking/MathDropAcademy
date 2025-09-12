@@ -242,7 +242,7 @@
 
 		.main-container {
 			display: grid;
-			grid-template-rows: auto auto 1fr auto;
+			grid-template-rows: auto auto 1fr auto auto;
 			gap: 15px;
 			max-width: 900px;
 			margin: 0 auto;
@@ -349,7 +349,8 @@
 				8px 8px 0px rgba(0, 0, 0, 0.3);
 			padding: 10px;
 			min-height: 0;
-			overflow: hidden;
+			overflow: visible;
+			flex-shrink: 1;
 		}
 
 		#game {
@@ -493,6 +494,70 @@
 			border-color: #ccc;
 			color: #999;
 			cursor: not-allowed;
+		}
+
+		/* Mobile Control Buttons */
+		.mobile-controls {
+			display: flex;
+			justify-content: center;
+			gap: 15px;
+			padding: 10px;
+			background: rgba(51, 51, 51, 0.9);
+			border-top: 3px solid #00ff41;
+			position: sticky;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			z-index: 100;
+			backdrop-filter: blur(5px);
+		}
+
+		.mobile-btn {
+			background: #333333;
+			color: #00ff41;
+			border: 3px solid #00ff41;
+			border-radius: 0;
+			padding: 15px 20px;
+			font-size: 1.2em;
+			font-weight: bold;
+			font-family: 'Courier New', monospace;
+			cursor: pointer;
+			box-shadow: 
+				3px 3px 0px #000000,
+				6px 6px 0px rgba(0, 0, 0, 0.3);
+			transition: none;
+			-webkit-tap-highlight-color: rgba(0, 255, 65, 0.3);
+			touch-action: manipulation;
+			user-select: none;
+			-webkit-user-select: none;
+			min-width: 60px;
+		}
+
+		.mobile-btn:active {
+			transform: translate(2px, 2px);
+			box-shadow: 
+				1px 1px 0px #000000,
+				2px 2px 0px rgba(0, 0, 0, 0.3);
+			background: #00ff41;
+			color: #000000;
+		}
+
+		/* Hide mobile controls on desktop and show desktop controls */
+		@media (min-width: 769px) {
+			.mobile-controls {
+				display: none;
+			}
+		}
+
+		/* Hide desktop controls on mobile and ensure mobile controls are visible */
+		@media (max-width: 768px) {
+			.controls {
+				display: none;
+			}
+			
+			.mobile-controls {
+				display: flex;
+			}
 		}
 
 		.controls {
@@ -854,7 +919,7 @@
 				padding: 3px;
 				gap: 6px;
 				height: 100vh;
-				height: 100dvh; /* Use dynamic viewport height */
+				height: calc(100dvh - 80px); /* Account for mobile controls */
 				padding-bottom: max(3px, env(safe-area-inset-bottom));
 				min-height: 0;
 			}
@@ -870,9 +935,12 @@
 			}
 
 			.title .pause-btn {
-				padding: 5px 8px;
-				font-size: 0.65em;
+				padding: 8px 12px;
+				font-size: 0.7em;
 				right: 5px;
+				min-width: auto;
+				-webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+				touch-action: manipulation;
 			}
 
 			.game-stats {
@@ -1060,6 +1128,13 @@
 			<div class="game-text">
 				<div id="status" class="status-default">Use ← → arrow keys to position the falling card!</div>
 			</div>
+		</div>
+
+		<!-- Mobile Control Buttons -->
+		<div class="mobile-controls">
+			<button class="mobile-btn" id="leftBtn">←</button>
+			<button class="mobile-btn" id="dropBtn">DROP</button>
+			<button class="mobile-btn" id="rightBtn">→</button>
 		</div>
 
 		<div class="controls">
@@ -2195,10 +2270,45 @@
 			document.getElementById('exitBtn').addEventListener('click', exitToMainMenu);
 		}
 
+		// Add mobile button event listeners
+		function addMobileControls() {
+			const leftBtn = document.getElementById('leftBtn');
+			const rightBtn = document.getElementById('rightBtn');
+			const dropBtn = document.getElementById('dropBtn');
+
+			if (leftBtn) {
+				leftBtn.addEventListener('click', function() {
+					if (currentScreen === 'gameScreen' && !isPaused && falling && fx > 0) {
+						fx--;
+						draw();
+					}
+				});
+			}
+
+			if (rightBtn) {
+				rightBtn.addEventListener('click', function() {
+					if (currentScreen === 'gameScreen' && !isPaused && falling && fx < gridW - 1) {
+						fx++;
+						draw();
+					}
+				});
+			}
+
+			if (dropBtn) {
+				dropBtn.addEventListener('click', function() {
+					if (currentScreen === 'gameScreen' && !isPaused && falling && fy < gridH - 1) {
+						fy++;
+						draw();
+					}
+				});
+			}
+		}
+
 		// Initialize game
 		function initGame() {
 			// Add event listeners
 			addPauseMenuListeners();
+			addMobileControls();
 
 			// Start with loading screen
 			showLoadingScreen();
