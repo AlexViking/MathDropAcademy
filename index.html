@@ -637,6 +637,12 @@
 			.mobile-controls {
 				display: none;
 			}
+			
+			/* Hide fullscreen button on desktop */
+			#fullscreenBtn,
+			#fullscreenToggle {
+				display: none !important;
+			}
 		}
 
 		/* Hide desktop controls on mobile and ensure mobile controls are visible */
@@ -2087,6 +2093,12 @@
 				status: !!(document.getElementById('leftBtn') && document.getElementById('rightBtn')) ? '✅' : '❌'
 			});
 
+			tests.mobile.push({
+				test: 'Fullscreen available on mobile',
+				result: isMobileDevice() ? !!document.getElementById('fullscreenToggle') : true,
+				status: (isMobileDevice() ? !!document.getElementById('fullscreenToggle') : true) ? '✅' : '❌'
+			});
+
 			// Report results
 			console.log("📊 Self-Analysis Results:");
 			console.log("DOM Elements:", tests.domElements);
@@ -2611,18 +2623,30 @@
 			document.getElementById('exitBtn').addEventListener('click', exitToMainMenu);
 		}
 
-		// Fullscreen functionality
+		// Check if device is mobile
+		function isMobileDevice() {
+			return window.innerWidth <= 768 || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+		}
+
+		// Fullscreen functionality (mobile only)
 		function showFullscreenButton() {
 			const fullscreenBtn = document.getElementById('fullscreenBtn');
 			const loadingText = document.getElementById('loadingText');
 			
 			loadingText.textContent = "Game loaded successfully!";
-			fullscreenBtn.style.display = 'block';
 			
-			fullscreenBtn.addEventListener('click', function() {
-				enterFullscreen();
+			// Only show fullscreen button on mobile devices
+			if (isMobileDevice()) {
+				fullscreenBtn.style.display = 'block';
+				
+				fullscreenBtn.addEventListener('click', function() {
+					enterFullscreen();
+					showLevelPicker();
+				});
+			} else {
+				// On desktop, skip fullscreen and go directly to level picker
 				showLevelPicker();
-			});
+			}
 		}
 
 		function enterFullscreen() {
@@ -2647,6 +2671,11 @@
 		}
 
 		function toggleFullscreen() {
+			// Only allow fullscreen toggle on mobile devices
+			if (!isMobileDevice()) {
+				return;
+			}
+			
 			if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
 				exitFullscreen();
 			} else {
@@ -2721,9 +2750,9 @@
 			addPauseMenuListeners();
 			addMobileControls();
 			
-			// Add fullscreen toggle listener
+			// Add fullscreen toggle listener (mobile only)
 			const fullscreenToggle = document.getElementById('fullscreenToggle');
-			if (fullscreenToggle) {
+			if (fullscreenToggle && isMobileDevice()) {
 				fullscreenToggle.addEventListener('click', toggleFullscreen);
 			}
 
