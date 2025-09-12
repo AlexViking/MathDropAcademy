@@ -120,6 +120,7 @@
 				repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,.03) 2px, rgba(255,255,255,.03) 4px);
 			color: #00ff41;
 			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
 			padding: 10px 0;
 		}
 
@@ -145,7 +146,9 @@
 			gap: 15px;
 			margin: 20px 0;
 			max-height: 70vh;
+			max-height: 70dvh;
 			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
 			padding: 5px;
 			box-sizing: border-box;
 		}
@@ -169,8 +172,10 @@
 			justify-content: center;
 			box-sizing: border-box;
 			position: relative;
-			-webkit-tap-highlight-color: transparent;
+			-webkit-tap-highlight-color: rgba(0, 255, 65, 0.2);
 			touch-action: manipulation;
+			user-select: none;
+			-webkit-user-select: none;
 		}
 
 		.level-card:hover:not(.locked) {
@@ -242,6 +247,7 @@
 			max-width: 900px;
 			margin: 0 auto;
 			height: 100vh;
+			height: 100dvh; /* Dynamic viewport height for mobile */
 			width: 100%;
 			padding: 10px;
 			box-sizing: border-box;
@@ -355,6 +361,8 @@
 			background: #000000;
 			border-radius: 0;
 			box-shadow: inset 2px 2px 0px rgba(0, 255, 65, 0.3);
+			max-width: 100%;
+			overflow: visible;
 		}
 
 		.cell {
@@ -785,7 +793,10 @@
 				gap: 8px;
 				margin: 10px 0;
 				max-height: 75vh;
+				max-height: 75dvh; /* Dynamic viewport height */
 				padding: 3px;
+				-webkit-overflow-scrolling: touch;
+				overflow-y: auto;
 			}
 
 			.level-card {
@@ -795,6 +806,10 @@
 				box-shadow: 
 					2px 2px 0px #000000,
 					4px 4px 0px rgba(0, 0, 0, 0.3);
+				-webkit-tap-highlight-color: rgba(0, 255, 65, 0.3);
+				touch-action: manipulation;
+				user-select: none;
+				-webkit-user-select: none;
 			}
 
 			.level-card:hover:not(.locked) {
@@ -838,6 +853,10 @@
 			.main-container {
 				padding: 3px;
 				gap: 6px;
+				height: 100vh;
+				height: 100dvh; /* Use dynamic viewport height */
+				padding-bottom: max(3px, env(safe-area-inset-bottom));
+				min-height: 0;
 			}
 
 			.title {
@@ -866,9 +885,13 @@
 			}
 
 			#game {
-				grid-template-columns: repeat(10, 28px);
-				grid-template-rows: repeat(10, 23px);
+				grid-template-columns: repeat(10, min(28px, 8vw));
+				grid-template-rows: repeat(10, min(23px, 6vw));
 				border-width: 3px;
+				max-width: 100%;
+				width: 100%;
+				overflow: visible;
+				gap: 1px;
 			}
 
 			.cell {
@@ -2096,16 +2119,20 @@
 		let touchStartY = null;
 
 		document.addEventListener('touchstart', function(e) {
-			if (currentScreen !== 'gameScreen' || isPaused || !falling) return;
-			
-			e.preventDefault();
-			const touch = e.touches[0];
-			touchStartX = touch.clientX;
-			touchStartY = touch.clientY;
+			// Only prevent default for game screen, allow normal touch for level picker
+			if (currentScreen === 'gameScreen' && !isPaused && falling) {
+				e.preventDefault();
+				const touch = e.touches[0];
+				touchStartX = touch.clientX;
+				touchStartY = touch.clientY;
+			}
 		}, { passive: false });
 
 		document.addEventListener('touchmove', function(e) {
-			e.preventDefault();
+			// Only prevent default for game screen
+			if (currentScreen === 'gameScreen' && !isPaused && falling) {
+				e.preventDefault();
+			}
 		}, { passive: false });
 
 		document.addEventListener('touchend', function(e) {
