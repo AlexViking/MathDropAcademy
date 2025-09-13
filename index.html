@@ -645,101 +645,27 @@
 			}
 		}
 
-		/* iOS Fullscreen Support */
-		.ios-fullscreen {
-			height: 100vh !important;
-			overflow: hidden;
-		}
-
-		.ios-fullscreen body {
-			height: 100vh !important;
-			position: fixed;
-			width: 100%;
-			top: 0;
-			left: 0;
-		}
-
-		/* Improved mobile viewport handling */
-		@supports (-webkit-touch-callout: none) {
-			/* iOS Safari */
-			.ios-fullscreen .screen {
-				height: 100vh;
-				height: -webkit-fill-available;
-			}
-		}
-
 		/* Hide desktop controls on mobile and ensure mobile controls are visible */
 		@media (max-width: 768px) {
 			.controls {
 				display: none;
 			}
-
+			
 			.mobile-controls {
 				display: flex;
 			}
-
+			
 			/* Compact mobile header */
 			.compact-header {
 				padding: 6px 8px;
 				min-height: 35px;
 			}
-
+			
 			.compact-btn {
 				padding: 6px 8px;
 				font-size: 0.9em;
-				touch-action: manipulation;
-				-webkit-tap-highlight-color: rgba(0, 255, 65, 0.3);
 			}
-
-			.compact-btn:active {
-				transform: scale(0.95);
-				background-color: rgba(0, 255, 65, 0.2);
-			}
-
-			/* Better mobile viewport handling */
-			body {
-				min-height: 100vh;
-				min-height: 100dvh;
-			}
-
-			.screen {
-				min-height: 100vh;
-				min-height: 100dvh;
-				display: flex;
-				flex-direction: column;
-			}
-
-			.level-picker-content {
-				flex: 1;
-				display: flex;
-				flex-direction: column;
-				padding: 10px;
-				max-height: 100vh;
-				max-height: 100dvh;
-				overflow: hidden;
-			}
-
-			.level-picker-title {
-				font-size: 1.6em !important;
-				margin: 10px 0 5px 0 !important;
-			}
-
-			.level-picker-content p {
-				font-size: 1em !important;
-				margin-bottom: 15px !important;
-			}
-
-			.level-grid {
-				flex: 1;
-				grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
-				gap: 8px !important;
-				margin: 0 !important;
-				max-height: calc(100vh - 180px) !important;
-				max-height: calc(100dvh - 180px) !important;
-				overflow-y: auto !important;
-				-webkit-overflow-scrolling: touch !important;
-			}
-
+			
 			.compact-stats {
 				gap: 8px;
 			}
@@ -1388,8 +1314,8 @@
 			<!-- Compact Header with combined title and stats -->
 			<div class="compact-header">
 				<div class="header-left">
-					<button class="compact-btn" id="levelPickerBtn">📚</button>
-					<button class="compact-btn" id="pauseBtn">⏸️</button>
+					<button class="compact-btn" onclick="showLevelPicker()">📚</button>
+					<button class="compact-btn" onclick="pauseGame()">⏸️</button>
 				</div>
 				<div class="header-center">
 					<div class="compact-stats">
@@ -2725,45 +2651,22 @@
 
 		function enterFullscreen() {
 			const elem = document.documentElement;
-
-			// For iOS Safari, we need to use a different approach
-			if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-				// iOS Safari has limited fullscreen support
-				// Instead, we'll hide the browser UI by scrolling and using viewport
-				document.body.style.height = '100vh';
-				document.documentElement.style.height = '100vh';
-				window.scrollTo(0, 1);
-
-				// Add a class to help with iOS styling
-				document.body.classList.add('ios-fullscreen');
-			} else {
-				// Standard fullscreen API for other devices
-				if (elem.requestFullscreen) {
-					elem.requestFullscreen().catch(e => console.log('Fullscreen failed:', e));
-				} else if (elem.webkitRequestFullscreen) { /* Safari */
-					elem.webkitRequestFullscreen();
-				} else if (elem.msRequestFullscreen) { /* IE11 */
-					elem.msRequestFullscreen();
-				}
+			if (elem.requestFullscreen) {
+				elem.requestFullscreen();
+			} else if (elem.webkitRequestFullscreen) { /* Safari */
+				elem.webkitRequestFullscreen();
+			} else if (elem.msRequestFullscreen) { /* IE11 */
+				elem.msRequestFullscreen();
 			}
 		}
 
 		function exitFullscreen() {
-			// Handle iOS fullscreen exit
-			if (document.body.classList.contains('ios-fullscreen')) {
-				document.body.classList.remove('ios-fullscreen');
-				document.body.style.height = '';
-				document.documentElement.style.height = '';
-				window.scrollTo(0, 0);
-			} else {
-				// Standard fullscreen API
-				if (document.exitFullscreen) {
-					document.exitFullscreen().catch(e => console.log('Exit fullscreen failed:', e));
-				} else if (document.webkitExitFullscreen) { /* Safari */
-					document.webkitExitFullscreen();
-				} else if (document.msExitFullscreen) { /* IE11 */
-					document.msExitFullscreen();
-				}
+			if (document.exitFullscreen) {
+				document.exitFullscreen();
+			} else if (document.webkitExitFullscreen) { /* Safari */
+				document.webkitExitFullscreen();
+			} else if (document.msExitFullscreen) { /* IE11 */
+				document.msExitFullscreen();
 			}
 		}
 
@@ -2772,14 +2675,8 @@
 			if (!isMobileDevice()) {
 				return;
 			}
-
-			// Check if we're in fullscreen mode
-			const isInFullscreen = document.fullscreenElement ||
-								   document.webkitFullscreenElement ||
-								   document.msFullscreenElement ||
-								   document.body.classList.contains('ios-fullscreen');
-
-			if (isInFullscreen) {
+			
+			if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
 				exitFullscreen();
 			} else {
 				enterFullscreen();
@@ -2856,57 +2753,7 @@
 			// Add fullscreen toggle listener (mobile only)
 			const fullscreenToggle = document.getElementById('fullscreenToggle');
 			if (fullscreenToggle && isMobileDevice()) {
-				fullscreenToggle.addEventListener('click', function(e) {
-					e.preventDefault();
-					toggleFullscreen();
-				});
-				fullscreenToggle.addEventListener('touchstart', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-				});
-				fullscreenToggle.addEventListener('touchend', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					toggleFullscreen();
-				});
-			}
-
-			// Add level picker and pause button listeners
-			const levelPickerBtn = document.getElementById('levelPickerBtn');
-			const pauseBtn = document.getElementById('pauseBtn');
-
-			if (levelPickerBtn) {
-				// Add both click and touch events for better mobile support
-				levelPickerBtn.addEventListener('click', function(e) {
-					e.preventDefault();
-					showLevelPicker();
-				});
-				levelPickerBtn.addEventListener('touchstart', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-				});
-				levelPickerBtn.addEventListener('touchend', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					showLevelPicker();
-				});
-			}
-
-			if (pauseBtn) {
-				// Add both click and touch events for better mobile support
-				pauseBtn.addEventListener('click', function(e) {
-					e.preventDefault();
-					pauseGame();
-				});
-				pauseBtn.addEventListener('touchstart', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-				});
-				pauseBtn.addEventListener('touchend', function(e) {
-					e.preventDefault();
-					e.stopPropagation();
-					pauseGame();
-				});
+				fullscreenToggle.addEventListener('click', toggleFullscreen);
 			}
 
 			// Run self-analysis after DOM is ready
